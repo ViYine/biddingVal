@@ -272,7 +272,13 @@ npm error git@github.com: Permission denied (publickey).
 
 **解决方案:**
 
-**方法一：使用npm安装修复脚本（推荐）**
+**方法一：使用简单安装修复脚本（推荐）**
+```bash
+chmod +x fix_simple_install.sh
+./fix_simple_install.sh
+```
+
+**方法二：使用npm安装修复脚本**
 ```bash
 chmod +x fix_npm_install.sh
 ./fix_npm_install.sh
@@ -299,7 +305,44 @@ npm install -g cnpm --registry=https://registry.npmmirror.com
 cnpm install
 ```
 
-### 8. Vite迁移问题
+### 8. TypeScript类型声明问题
+
+**错误信息:**
+```
+Could not find a declaration file for module 'react-flip-toolkit'
+Try `npm i --save-dev @types/react-flip-toolkit` if it exists or add a new declaration (.d.ts) file
+```
+
+**解决方案:**
+
+**方法一：使用TypeScript类型修复脚本（推荐）**
+```bash
+chmod +x fix_typescript_types.sh
+./fix_typescript_types.sh
+```
+
+**方法二：手动修复**
+```bash
+cd frontend/src
+mkdir -p types
+# 创建react-flip-toolkit.d.ts文件
+cat > types/react-flip-toolkit.d.ts << 'EOF'
+declare module 'react-flip-toolkit' {
+  import React from 'react';
+  export const Flipper: React.FC<any>;
+  export const Flipped: React.FC<any>;
+}
+EOF
+```
+
+**方法三：禁用TypeScript检查**
+```bash
+cd frontend
+# 在package.json的scripts中添加TSC_COMPILE_ON_ERROR=true
+# "build:prod": "TSC_COMPILE_ON_ERROR=true react-scripts build"
+```
+
+### 9. Vite迁移问题
 
 **错误信息:**
 ```
@@ -395,13 +438,25 @@ grep -n "static" backend_api/bidding_api.py
 
 ## 推荐修复顺序
 
-1. **首先尝试npm安装修复（推荐）:**
+1. **首先尝试TypeScript类型修复（推荐）:**
+   ```bash
+   chmod +x fix_typescript_types.sh
+   ./fix_typescript_types.sh
+   ```
+
+2. **如果失败，尝试简单安装修复:**
+   ```bash
+   chmod +x fix_simple_install.sh
+   ./fix_simple_install.sh
+   ```
+
+3. **如果失败，尝试npm安装修复:**
    ```bash
    chmod +x fix_npm_install.sh
    ./fix_npm_install.sh
    ```
 
-2. **如果失败，尝试终极解决方案:**
+4. **如果失败，尝试终极解决方案:**
    ```bash
    chmod +x fix_ultimate.sh
    ./fix_ultimate.sh

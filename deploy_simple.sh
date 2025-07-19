@@ -118,7 +118,15 @@ else
     echo "🔧 尝试修复前端问题..."
     cd ..
     
-    if [ -f "fix_npm_install.sh" ]; then
+    if [ -f "fix_typescript_types.sh" ]; then
+        echo "📦 运行TypeScript类型修复脚本..."
+        chmod +x fix_typescript_types.sh
+        ./fix_typescript_types.sh
+    elif [ -f "fix_simple_install.sh" ]; then
+        echo "📦 运行简单安装修复脚本..."
+        chmod +x fix_simple_install.sh
+        ./fix_simple_install.sh
+    elif [ -f "fix_npm_install.sh" ]; then
         echo "📦 运行npm安装修复脚本..."
         chmod +x fix_npm_install.sh
         ./fix_npm_install.sh

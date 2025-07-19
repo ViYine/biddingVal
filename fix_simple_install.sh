@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# 修复npm安装问题脚本
-# 解决Git权限和包名错误
+# 简单安装修复脚本
+# 避免npm配置问题
 
 set -e
 
-echo "🔧 修复npm安装问题"
-echo "=================="
+echo "🔧 简单安装修复"
+echo "==============="
 
 # 检查是否在正确的目录
 if [ ! -f "frontend/package.json" ]; then
@@ -33,7 +33,7 @@ echo "📦 清理旧的依赖..."
 rm -rf node_modules package-lock.json yarn.lock build
 
 echo ""
-echo "📦 创建正确的package.json..."
+echo "📦 创建最简单的package.json..."
 cat > package.json << 'EOF'
 {
   "name": "stock-data-frontend",
@@ -93,29 +93,20 @@ declare module 'js-sha256' {
 EOF
 
 echo ""
-echo "📦 使用npm安装依赖（使用registry）..."
-# 设置npm使用官方registry
-npm config set registry https://registry.npmjs.org/
-
-echo ""
-echo "📦 安装依赖..."
-npm install --legacy-peer-deps --no-audit --no-fund
+echo "📦 直接安装依赖..."
+npm install --legacy-peer-deps
 
 echo ""
 echo "🧪 测试构建..."
 if npm run build:prod; then
-    echo "✅ npm安装和构建成功"
+    echo "✅ 简单安装构建成功"
 else
     echo "❌ npm构建失败，尝试使用yarn..."
     
     if command -v yarn &> /dev/null; then
         echo "📦 使用yarn重新安装..."
         rm -rf node_modules package-lock.json yarn.lock
-        
-        # 设置yarn使用官方registry
-        yarn config set registry https://registry.yarnpkg.com/
-        
-        yarn install --ignore-engines
+        yarn install
         if yarn build:prod; then
             echo "✅ 使用yarn构建成功"
         else
@@ -149,8 +140,7 @@ else
         echo "📦 安装yarn..."
         npm install -g yarn
         rm -rf node_modules package-lock.json yarn.lock
-        yarn config set registry https://registry.yarnpkg.com/
-        yarn install --ignore-engines
+        yarn install
         if yarn build:prod; then
             echo "✅ 使用yarn构建成功"
         else
@@ -163,7 +153,7 @@ fi
 cd ..
 
 echo ""
-echo "🎉 npm安装问题修复完成！"
+echo "🎉 简单安装修复完成！"
 echo ""
 echo "📋 下一步操作："
 echo "1. 重新运行部署: ./deploy.sh"
