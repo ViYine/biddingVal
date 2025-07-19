@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  stock-data-app:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend_api/copy_bidding:/app/backend_api/copy_bidding
+    environment:
+      - FLASK_ENV=production
+    restart: unless-stopped

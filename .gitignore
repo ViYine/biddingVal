@@ -1,0 +1,153 @@
+# 敏感信息文件
+password.json
+*.key
+*.pem
+*.crt
+*.p12
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+config.json
+secrets.json
+
+# Python 相关
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# 虚拟环境
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+.env/
+
+# 数据库文件
+*.db
+*.sqlite
+*.sqlite3
+stock_data.db
+
+# Node.js 相关
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# 构建输出
+frontend/build/
+frontend/dist/
+frontend/.vite/
+frontend/.cache/
+
+# 日志文件
+*.log
+*.pid
+logs/
+log/
+
+# 临时文件
+*.tmp
+*.temp
+.tmp/
+.temp/
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE 和编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# 操作系统
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 测试覆盖率
+.coverage
+.pytest_cache/
+.tox/
+htmlcov/
+.coverage.*
+coverage.xml
+*.cover
+.hypothesis/
+
+# 缓存目录
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+.cache/
+
+# 备份文件
+*.bak
+*.backup
+*.old
+*.orig
+
+# 压缩文件
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# 特定于项目的文件
+show_password.sh
+start.sh
+stop.sh
+test_backend.sh
+uninstall.sh
+
+# 数据文件
+*.csv
+*.xlsx
+*.xls
+data/
+datasets/
+
+# 其他
+*.pid
+*.seed
+*.pid.lock 

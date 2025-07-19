@@ -1,0 +1,344 @@
+#!/bin/bash
+
+# 股票数据可视化系统一键部署脚本
+# 支持 Linux/macOS 系统
+
+set -e
+
+echo "🚀 开始部署股票数据可视化系统..."
+
+# 检查系统
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    OS="linux"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    OS="macos"
+else
+    echo "❌ 不支持的操作系统: $OSTYPE"
+    exit 1
+fi
+
+echo "📋 检测到操作系统: $OS"
+
+# 检查必要的工具
+check_command() {
+    if ! command -v $1 &> /dev/null; then
+        echo "❌ 未找到 $1，请先安装"
+        exit 1
+    fi
+}
+
+echo "🔍 检查系统依赖..."
+check_command "python3"
+check_command "pip3"
+check_command "node"
+check_command "npm"
+
+# 创建项目目录
+PROJECT_DIR="stock_data_project"
+
+# 检查当前目录结构
+if [ -d "backend_api" ] && [ -d "frontend" ]; then
+    # 已经在stock_data_project目录内
+    echo "✅ 检测到项目结构，在项目目录内运行"
+    PROJECT_DIR="."
+elif [ -d "$PROJECT_DIR" ]; then
+    # 在上级目录，需要进入项目目录
+    echo "✅ 进入项目目录: $PROJECT_DIR"
+    cd "$PROJECT_DIR"
+else
+    echo "❌ 项目目录不存在，请确保在正确的目录下运行此脚本"
+    echo "   当前目录: $(pwd)"
+    echo "   期望找到: backend_api/ 和 frontend/ 目录"
+    exit 1
+fi
+
+cd "$PROJECT_DIR"
+
+# 后端部署
+echo "🔧 部署后端服务..."
+
+cd backend_api
+
+# 创建虚拟环境
+if [ ! -d "venv" ]; then
+    echo "📦 创建Python虚拟环境..."
+    python3 -m venv venv
+fi
+
+# 激活虚拟环境
+echo "🔌 激活虚拟环境..."
+source venv/bin/activate
+
+# 安装依赖
+echo "📥 安装Python依赖..."
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# 生成随机密码
+echo "🔐 生成随机登录密码..."
+python3 password_generator.py
+
+# 读取生成的密码
+if [ -f "password.json" ]; then
+    PASSWORD=$(python3 -c "import json; print(json.load(open('password.json'))['password'])")
+    echo "✅ 密码生成成功: $PASSWORD"
+else
+    echo "❌ 密码生成失败"
+    exit 1
+fi
+
+# 检查数据文件
+if [ ! -d "copy_bidding" ]; then
+    echo "⚠️  警告: 未找到数据目录 copy_bidding"
+    echo "请确保将CSV数据文件放在 backend_api/copy_bidding/ 目录下"
+fi
+
+cd ..
+
+# 前端部署
+echo "🎨 部署前端应用..."
+
+cd frontend
+
+# 安装依赖
+echo "📥 安装Node.js依赖..."
+npm install --legacy-peer-deps
+
+# 构建生产版本
+echo "🏗️  构建前端生产版本..."
+npm run build:prod
+
+cd ..
+
+# 创建启动脚本
+echo "📝 创建启动脚本..."
+
+cat > start.sh << 'EOF'
+#!/bin/bash
+
+# 股票数据可视化系统启动脚本
+
+echo "🚀 启动股票数据可视化系统..."
+
+# 读取当前密码
+if [ -f "backend_api/password.json" ]; then
+    PASSWORD=$(python3 -c "import json; print(json.load(open('backend_api/password.json'))['password'])")
+    echo "🔐 当前登录密码: $PASSWORD"
+else
+    echo "❌ 密码文件不存在"
+    exit 1
+fi
+
+# 启动后端服务
+echo "🔧 启动后端服务..."
+cd backend_api
+
+# 检查虚拟环境
+if [ ! -d "venv" ]; then
+    echo "❌ 虚拟环境不存在，请先运行 ./deploy.sh"
+    exit 1
+fi
+
+# 激活虚拟环境
+echo "🔌 激活虚拟环境..."
+source venv/bin/activate
+
+# 检查依赖
+echo "🔍 检查Python依赖..."
+python3 -c "import flask, pandas, numpy, requests, gunicorn" 2>/dev/null || {
+    echo "❌ Python依赖不完整，请重新运行 ./deploy.sh"
+    exit 1
+}
+
+# 使用Gunicorn启动生产服务
+echo "🌐 启动API服务器 (端口: 5001)..."
+gunicorn -c gunicorn.conf.py bidding_api:app &
+BACKEND_PID=$!
+echo "✅ 后端服务已启动 (PID: $BACKEND_PID)"
+
+# 等待后端启动
+echo "⏳ 等待服务启动..."
+for i in {1..10}; do
+            if curl -f http://localhost:5001/api/health > /dev/null 2>&1; then
+        echo "✅ 后端服务运行正常"
+        break
+    fi
+    if [ $i -eq 10 ]; then
+        echo "❌ 后端服务启动失败"
+        echo "🔍 检查进程状态..."
+        ps aux | grep gunicorn | grep -v grep || echo "进程未找到"
+        echo "🔍 检查端口占用..."
+        lsof -i :5001 || echo "端口5001未被占用"
+        echo "🔍 检查日志..."
+        echo "请手动运行以下命令查看详细错误:"
+        echo "cd backend_api && source venv/bin/activate && python3 bidding_api.py"
+        kill $BACKEND_PID 2>/dev/null || true
+        exit 1
+    fi
+    sleep 1
+done
+
+echo ""
+echo "🎉 股票数据可视化系统启动成功!"
+echo "📊 访问地址: http://localhost:5001"
+echo "🔑 登录密码: $PASSWORD"
+echo ""
+echo "按 Ctrl+C 停止服务"
+
+# 等待用户中断
+wait $BACKEND_PID
+EOF
+
+chmod +x start.sh
+
+# 创建停止脚本
+cat > stop.sh << 'EOF'
+#!/bin/bash
+
+echo "🛑 停止股票数据可视化系统..."
+
+# 停止后端服务
+pkill -f "gunicorn.*bidding_api:app" || true
+
+echo "✅ 服务已停止"
+EOF
+
+chmod +x stop.sh
+
+# 创建密码查看脚本
+cat > show_password.sh << 'EOF'
+#!/bin/bash
+
+echo "🔐 查看当前登录密码..."
+
+if [ -f "backend_api/password.json" ]; then
+    PASSWORD=$(python3 -c "import json; print(json.load(open('backend_api/password.json'))['password'])")
+    echo "当前登录密码: $PASSWORD"
+else
+    echo "❌ 密码文件不存在"
+fi
+EOF
+
+chmod +x show_password.sh
+
+# 创建Docker部署文件（可选）
+echo "🐳 创建Docker配置..."
+
+cat > Dockerfile << 'EOF'
+# 多阶段构建
+FROM node:18-alpine AS frontend-builder
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm ci --only=production
+COPY frontend/ ./
+RUN npm run build:prod
+
+FROM python:3.9-slim
+WORKDIR /app
+
+# 安装系统依赖
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# 复制后端代码
+COPY backend_api/ ./backend_api/
+WORKDIR /app/backend_api
+
+# 安装Python依赖
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 生成随机密码
+RUN python3 password_generator.py
+
+# 复制前端构建文件
+COPY --from=frontend-builder /app/frontend/build ../frontend/build
+
+# 暴露端口
+EXPOSE 5000
+
+# 启动命令
+CMD ["gunicorn", "-c", "gunicorn.conf.py", "bidding_api:app"]
+EOF
+
+cat > docker-compose.yml << 'EOF'
+version: '3.8'
+
+services:
+  stock-data-app:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend_api/copy_bidding:/app/backend_api/copy_bidding
+    environment:
+      - FLASK_ENV=production
+    restart: unless-stopped
+EOF
+
+cat > .dockerignore << 'EOF'
+node_modules
+npm-debug.log
+.git
+.gitignore
+README.md
+.env
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+EOF
+
+echo ""
+echo "🎉 部署完成!"
+echo ""
+echo "📋 部署信息:"
+echo "   - 后端API: http://localhost:5001"
+echo "   - 前端应用: http://localhost:5001"
+echo "   - 登录密码: $PASSWORD"
+echo ""
+echo "🚀 启动方式:"
+echo "   1. 直接启动: ./start.sh"
+echo "   2. Docker启动: docker-compose up -d"
+echo "   3. 手动启动:"
+echo "      - 后端: cd stock_data_project/backend_api && source venv/bin/activate && gunicorn -c gunicorn.conf.py bidding_api:app"
+echo "      - 前端: cd stock_data_project/frontend && npm start"
+echo ""
+echo "🛑 停止服务: ./stop.sh"
+echo "🔐 查看密码: ./show_password.sh"
+echo ""
+echo "📁 项目结构:"
+echo "   stock_data_project/"
+echo "   ├── backend_api/          # 后端API服务"
+echo "   │   ├── copy_bidding/     # CSV数据文件"
+echo "   │   ├── venv/            # Python虚拟环境"
+echo "   │   ├── password.json    # 密码文件"
+echo "   │   └── bidding_api.py   # 主API文件"
+echo "   ├── frontend/            # 前端React应用"
+echo "   │   ├── build/           # 生产构建文件"
+echo "   │   └── src/             # 源代码"
+echo "   ├── start.sh             # 启动脚本"
+echo "   ├── stop.sh              # 停止脚本"
+echo "   ├── show_password.sh     # 密码查看脚本"
+echo "   ├── Dockerfile           # Docker配置"
+echo "   └── docker-compose.yml   # Docker Compose配置"
+echo ""
+echo "✅ 部署完成，可以开始使用了!"
+echo "🔑 请记住您的登录密码: $PASSWORD" 
