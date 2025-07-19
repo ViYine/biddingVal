@@ -109,15 +109,33 @@ TypeError: Cannot read properties of undefined (reading 'date')
 at extendFormats (/data1/home/rust/biddingVal/frontend/node_modules/ajv-keywords/keywords/_formatLimit.js:63:25)
 ```
 
+**或者:**
+```
+Error: Unknown keyword formatMinimum
+at get (/data1/home/rust/biddingVal/frontend/node_modules/ajv-keywords/dist/index.js:25:15)
+```
+
 **解决方案:**
 
-**方法一：使用ajv冲突修复脚本**
+**方法一：使用最简单的Create React App 3.x（推荐）**
+```bash
+chmod +x fix_simple_cra.sh
+./fix_simple_cra.sh
+```
+
+**方法二：使用深度ajv修复脚本**
+```bash
+chmod +x fix_ajv_deep.sh
+./fix_ajv_deep.sh
+```
+
+**方法三：使用ajv冲突修复脚本**
 ```bash
 chmod +x fix_ajv_conflict.sh
 ./fix_ajv_conflict.sh
 ```
 
-**方法二：使用Create React App 4.x**
+**方法四：使用Create React App 4.x**
 ```bash
 chmod +x fix_cra4.sh
 ./fix_cra4.sh
@@ -273,13 +291,25 @@ grep -n "static" backend_api/bidding_api.py
 
 ## 推荐修复顺序
 
-1. **首先尝试ajv冲突修复:**
+1. **首先尝试最简单的Create React App 3.x:**
+   ```bash
+   chmod +x fix_simple_cra.sh
+   ./fix_simple_cra.sh
+   ```
+
+2. **如果失败，尝试深度ajv修复:**
+   ```bash
+   chmod +x fix_ajv_deep.sh
+   ./fix_ajv_deep.sh
+   ```
+
+3. **如果失败，尝试ajv冲突修复:**
    ```bash
    chmod +x fix_ajv_conflict.sh
    ./fix_ajv_conflict.sh
    ```
 
-2. **如果失败，尝试Create React App 4.x:**
+4. **如果失败，尝试Create React App 4.x:**
    ```bash
    chmod +x fix_cra4.sh
    ./fix_cra4.sh

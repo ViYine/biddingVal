@@ -118,7 +118,15 @@ else
     echo "🔧 尝试修复前端问题..."
     cd ..
     
-    if [ -f "fix_ajv_conflict.sh" ]; then
+    if [ -f "fix_simple_cra.sh" ]; then
+        echo "📦 运行最简单的Create React App 3.x修复脚本..."
+        chmod +x fix_simple_cra.sh
+        ./fix_simple_cra.sh
+    elif [ -f "fix_ajv_deep.sh" ]; then
+        echo "📦 运行深度ajv修复脚本..."
+        chmod +x fix_ajv_deep.sh
+        ./fix_ajv_deep.sh
+    elif [ -f "fix_ajv_conflict.sh" ]; then
         echo "📦 运行ajv冲突修复脚本..."
         chmod +x fix_ajv_conflict.sh
         ./fix_ajv_conflict.sh
