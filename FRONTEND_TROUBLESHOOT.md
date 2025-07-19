@@ -195,7 +195,38 @@ npm install --legacy-peer-deps
 npm run build:prod
 ```
 
-### 5. Vite迁移问题
+### 5. Node.js 18 OpenSSL兼容性问题
+
+**错误信息:**
+```
+Error: error:0308010C:digital envelope routines::unsupported
+at new Hash (node:internal/crypto/hash:69:19)
+```
+
+**解决方案:**
+
+**方法一：使用简单OpenSSL修复（推荐）**
+```bash
+chmod +x fix_openssl_simple.sh
+./fix_openssl_simple.sh
+```
+
+**方法二：使用Node.js 18 OpenSSL修复**
+```bash
+chmod +x fix_node18_openssl.sh
+./fix_node18_openssl.sh
+```
+
+**方法三：手动修复**
+```bash
+cd frontend
+# 在package.json的scripts部分添加NODE_OPTIONS='--openssl-legacy-provider'
+# 例如：
+# "build": "NODE_OPTIONS='--openssl-legacy-provider' react-scripts build"
+# "build:prod": "NODE_OPTIONS='--openssl-legacy-provider' GENERATE_SOURCEMAP=false react-scripts build"
+```
+
+### 6. Vite迁移问题
 
 **错误信息:**
 ```
@@ -291,25 +322,37 @@ grep -n "static" backend_api/bidding_api.py
 
 ## 推荐修复顺序
 
-1. **首先尝试最简单的Create React App 3.x:**
+1. **首先尝试简单OpenSSL修复（推荐）:**
+   ```bash
+   chmod +x fix_openssl_simple.sh
+   ./fix_openssl_simple.sh
+   ```
+
+2. **如果失败，尝试Node.js 18 OpenSSL修复:**
+   ```bash
+   chmod +x fix_node18_openssl.sh
+   ./fix_node18_openssl.sh
+   ```
+
+3. **如果失败，尝试最简单的Create React App 3.x:**
    ```bash
    chmod +x fix_simple_cra.sh
    ./fix_simple_cra.sh
    ```
 
-2. **如果失败，尝试深度ajv修复:**
+4. **如果失败，尝试深度ajv修复:**
    ```bash
    chmod +x fix_ajv_deep.sh
    ./fix_ajv_deep.sh
    ```
 
-3. **如果失败，尝试ajv冲突修复:**
+5. **如果失败，尝试ajv冲突修复:**
    ```bash
    chmod +x fix_ajv_conflict.sh
    ./fix_ajv_conflict.sh
    ```
 
-4. **如果失败，尝试Create React App 4.x:**
+6. **如果失败，尝试Create React App 4.x:**
    ```bash
    chmod +x fix_cra4.sh
    ./fix_cra4.sh

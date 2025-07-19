@@ -118,7 +118,15 @@ else
     echo "🔧 尝试修复前端问题..."
     cd ..
     
-    if [ -f "fix_simple_cra.sh" ]; then
+    if [ -f "fix_openssl_simple.sh" ]; then
+        echo "📦 运行简单OpenSSL修复脚本..."
+        chmod +x fix_openssl_simple.sh
+        ./fix_openssl_simple.sh
+    elif [ -f "fix_node18_openssl.sh" ]; then
+        echo "📦 运行Node.js 18 OpenSSL修复脚本..."
+        chmod +x fix_node18_openssl.sh
+        ./fix_node18_openssl.sh
+    elif [ -f "fix_simple_cra.sh" ]; then
         echo "📦 运行最简单的Create React App 3.x修复脚本..."
         chmod +x fix_simple_cra.sh
         ./fix_simple_cra.sh
