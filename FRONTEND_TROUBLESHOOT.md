@@ -226,7 +226,41 @@ cd frontend
 # "build:prod": "NODE_OPTIONS='--openssl-legacy-provider' GENERATE_SOURCEMAP=false react-scripts build"
 ```
 
-### 6. Vite迁移问题
+### 6. Babel版本冲突
+
+**错误信息:**
+```
+Error: [BABEL] Requires Babel "^7.16.0", but was loaded with "7.12.3"
+```
+
+**解决方案:**
+
+**方法一：使用终极解决方案（推荐）**
+```bash
+chmod +x fix_ultimate.sh
+./fix_ultimate.sh
+```
+
+**方法二：使用Babel冲突修复**
+```bash
+chmod +x fix_babel_conflict.sh
+./fix_babel_conflict.sh
+```
+
+**方法三：手动修复**
+```bash
+cd frontend
+# 在package.json中添加overrides和resolutions
+# "overrides": {
+#   "@babel/core": "7.16.0",
+#   "@babel/preset-env": "7.16.0",
+#   "@babel/preset-react": "7.16.0",
+#   "@babel/preset-typescript": "7.16.0",
+#   "babel-loader": "8.2.0"
+# }
+```
+
+### 7. Vite迁移问题
 
 **错误信息:**
 ```
@@ -322,19 +356,31 @@ grep -n "static" backend_api/bidding_api.py
 
 ## 推荐修复顺序
 
-1. **首先尝试简单OpenSSL修复（推荐）:**
+1. **首先尝试终极解决方案（推荐）:**
+   ```bash
+   chmod +x fix_ultimate.sh
+   ./fix_ultimate.sh
+   ```
+
+2. **如果失败，尝试Babel冲突修复:**
+   ```bash
+   chmod +x fix_babel_conflict.sh
+   ./fix_babel_conflict.sh
+   ```
+
+3. **如果失败，尝试简单OpenSSL修复:**
    ```bash
    chmod +x fix_openssl_simple.sh
    ./fix_openssl_simple.sh
    ```
 
-2. **如果失败，尝试Node.js 18 OpenSSL修复:**
+4. **如果失败，尝试Node.js 18 OpenSSL修复:**
    ```bash
    chmod +x fix_node18_openssl.sh
    ./fix_node18_openssl.sh
    ```
 
-3. **如果失败，尝试最简单的Create React App 3.x:**
+5. **如果失败，尝试最简单的Create React App 3.x:**
    ```bash
    chmod +x fix_simple_cra.sh
    ./fix_simple_cra.sh

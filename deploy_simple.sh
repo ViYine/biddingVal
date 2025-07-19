@@ -118,7 +118,15 @@ else
     echo "🔧 尝试修复前端问题..."
     cd ..
     
-    if [ -f "fix_openssl_simple.sh" ]; then
+    if [ -f "fix_ultimate.sh" ]; then
+        echo "📦 运行终极解决方案脚本..."
+        chmod +x fix_ultimate.sh
+        ./fix_ultimate.sh
+    elif [ -f "fix_babel_conflict.sh" ]; then
+        echo "📦 运行Babel冲突修复脚本..."
+        chmod +x fix_babel_conflict.sh
+        ./fix_babel_conflict.sh
+    elif [ -f "fix_openssl_simple.sh" ]; then
         echo "📦 运行简单OpenSSL修复脚本..."
         chmod +x fix_openssl_simple.sh
         ./fix_openssl_simple.sh
