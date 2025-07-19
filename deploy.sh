@@ -19,19 +19,108 @@ fi
 
 echo "📋 检测到操作系统: $OS"
 
-# 检查必要的工具
-check_command() {
-    if ! command -v $1 &> /dev/null; then
-        echo "❌ 未找到 $1，请先安装"
-        exit 1
+# 检查并安装必要的工具
+check_and_install_command() {
+    local cmd=$1
+    local install_cmd=$2
+    local package_name=$3
+    
+    if ! command -v $cmd &> /dev/null; then
+        echo "⚠️  未找到 $cmd，尝试自动安装..."
+        
+        if [[ "$OS" == "linux" ]]; then
+            # Linux系统
+            if command -v apt-get &> /dev/null; then
+                # Ubuntu/Debian
+                echo "📦 使用 apt-get 安装 $package_name..."
+                sudo apt-get update
+                sudo apt-get install -y $package_name
+            elif command -v yum &> /dev/null; then
+                # CentOS/RHEL
+                echo "📦 使用 yum 安装 $package_name..."
+                sudo yum install -y $package_name
+            elif command -v dnf &> /dev/null; then
+                # Fedora
+                echo "📦 使用 dnf 安装 $package_name..."
+                sudo dnf install -y $package_name
+            else
+                echo "❌ 无法自动安装 $cmd，请手动安装"
+                echo "   安装命令: $install_cmd"
+                exit 1
+            fi
+        elif [[ "$OS" == "macos" ]]; then
+            # macOS系统
+            if command -v brew &> /dev/null; then
+                echo "📦 使用 Homebrew 安装 $package_name..."
+                brew install $package_name
+            else
+                echo "❌ 未找到 Homebrew，请先安装 Homebrew"
+                echo "   安装命令: /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
+                exit 1
+            fi
+        fi
+        
+        # 再次检查是否安装成功
+        if ! command -v $cmd &> /dev/null; then
+            echo "❌ $cmd 安装失败，请手动安装"
+            echo "   安装命令: $install_cmd"
+            exit 1
+        else
+            echo "✅ $cmd 安装成功"
+        fi
+    else
+        echo "✅ $cmd 已安装"
     fi
 }
 
 echo "🔍 检查系统依赖..."
-check_command "python3"
-check_command "pip3"
-check_command "node"
-check_command "npm"
+check_and_install_command "python3" "sudo apt-get install python3" "python3"
+check_and_install_command "pip3" "sudo apt-get install python3-pip" "python3-pip"
+
+# 特殊处理 Node.js 和 npm
+if ! command -v node &> /dev/null; then
+    echo "⚠️  未找到 node，尝试自动安装..."
+    
+    if [[ "$OS" == "linux" ]]; then
+        # Linux系统 - 使用 NodeSource 仓库安装最新版本
+        if command -v curl &> /dev/null; then
+            echo "📦 安装 Node.js 18.x..."
+            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+        else
+            echo "❌ 需要 curl 来安装 Node.js，请先安装 curl"
+            exit 1
+        fi
+    elif [[ "$OS" == "macos" ]]; then
+        # macOS系统
+        if command -v brew &> /dev/null; then
+            echo "📦 使用 Homebrew 安装 Node.js..."
+            brew install node
+        else
+            echo "❌ 未找到 Homebrew，请先安装 Homebrew"
+            exit 1
+        fi
+    fi
+    
+    # 再次检查
+    if ! command -v node &> /dev/null; then
+        echo "❌ Node.js 安装失败，请手动安装"
+        echo "   访问: https://nodejs.org/ 下载安装"
+        exit 1
+    else
+        echo "✅ Node.js 安装成功"
+    fi
+else
+    echo "✅ node 已安装"
+fi
+
+# npm 通常随 Node.js 一起安装
+if ! command -v npm &> /dev/null; then
+    echo "❌ npm 未找到，请重新安装 Node.js"
+    exit 1
+else
+    echo "✅ npm 已安装"
+fi
 
 # 创建项目目录
 PROJECT_DIR="stock_data_project"
