@@ -101,7 +101,83 @@ EOF
 npm run build:prod
 ```
 
-### 4. Vite迁移问题
+### 4. ajv-keywords版本冲突
+
+**错误信息:**
+```
+TypeError: Cannot read properties of undefined (reading 'date')
+at extendFormats (/data1/home/rust/biddingVal/frontend/node_modules/ajv-keywords/keywords/_formatLimit.js:63:25)
+```
+
+**解决方案:**
+
+**方法一：使用ajv冲突修复脚本**
+```bash
+chmod +x fix_ajv_conflict.sh
+./fix_ajv_conflict.sh
+```
+
+**方法二：使用Create React App 4.x**
+```bash
+chmod +x fix_cra4.sh
+./fix_cra4.sh
+```
+
+**方法三：手动修复**
+```bash
+cd frontend
+rm -rf node_modules package-lock.json
+# 编辑package.json，添加overrides
+cat > package.json << 'EOF'
+{
+  "name": "stock-data-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@types/node": "^16.18.0",
+    "@types/react": "^16.14.0",
+    "@types/react-dom": "^16.9.0",
+    "js-sha256": "^0.11.0",
+    "react": "^16.14.0",
+    "react-dom": "^16.14.0",
+    "react-flip-toolkit": "^2.0.3",
+    "react-scripts": "4.0.3",
+    "typescript": "^4.1.2",
+    "web-vitals": "^1.0.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "build:prod": "GENERATE_SOURCEMAP=false react-scripts build"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "proxy": "http://localhost:5000"
+}
+EOF
+npm install --legacy-peer-deps
+npm run build:prod
+```
+
+### 5. Vite迁移问题
 
 **错误信息:**
 ```
@@ -197,31 +273,43 @@ grep -n "static" backend_api/bidding_api.py
 
 ## 推荐修复顺序
 
-1. **首先尝试npm包修复:**
+1. **首先尝试ajv冲突修复:**
+   ```bash
+   chmod +x fix_ajv_conflict.sh
+   ./fix_ajv_conflict.sh
+   ```
+
+2. **如果失败，尝试Create React App 4.x:**
+   ```bash
+   chmod +x fix_cra4.sh
+   ./fix_cra4.sh
+   ```
+
+3. **如果还是有问题，尝试npm包修复:**
    ```bash
    chmod +x fix_npm_packages.sh
    ./fix_npm_packages.sh
    ```
 
-2. **如果失败，尝试快速修复:**
+4. **如果还是有问题，尝试快速修复:**
    ```bash
    chmod +x quick_fix.sh
    ./quick_fix.sh
    ```
 
-3. **如果还是有问题，修复Create React App:**
+5. **如果还是有问题，修复Create React App:**
    ```bash
    chmod +x fix_cra.sh
    ./fix_cra.sh
    ```
 
-4. **如果还是有问题，尝试Vite迁移:**
+6. **如果还是有问题，尝试Vite迁移:**
    ```bash
    chmod +x migrate_to_vite_simple.sh
    ./migrate_to_vite_simple.sh
    ```
 
-5. **最后，使用详细修复:**
+7. **最后，使用详细修复:**
    ```bash
    chmod +x fix_frontend.sh
    ./fix_frontend.sh

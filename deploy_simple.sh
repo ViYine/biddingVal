@@ -118,7 +118,15 @@ else
     echo "🔧 尝试修复前端问题..."
     cd ..
     
-    if [ -f "fix_npm_packages.sh" ]; then
+    if [ -f "fix_ajv_conflict.sh" ]; then
+        echo "📦 运行ajv冲突修复脚本..."
+        chmod +x fix_ajv_conflict.sh
+        ./fix_ajv_conflict.sh
+    elif [ -f "fix_cra4.sh" ]; then
+        echo "📦 运行Create React App 4.x修复脚本..."
+        chmod +x fix_cra4.sh
+        ./fix_cra4.sh
+    elif [ -f "fix_npm_packages.sh" ]; then
         echo "📦 运行npm包修复脚本..."
         chmod +x fix_npm_packages.sh
         ./fix_npm_packages.sh
