@@ -110,10 +110,65 @@ brew install python3 node
 ### 常见问题
 
 #### 1. "未找到 node" 错误
+
+**方法一：使用专用安装脚本**
 ```bash
-# 手动安装Node.js
+chmod +x install_nodejs.sh
+./install_nodejs.sh
+```
+
+**方法二：根据发行版手动安装**
+
+**Ubuntu/Debian:**
+```bash
 curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
 sudo apt install -y nodejs
+```
+
+**CentOS/RHEL/Rocky Linux:**
+```bash
+curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
+sudo yum install -y nodejs
+```
+
+**Fedora:**
+```bash
+curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
+sudo dnf install -y nodejs
+```
+
+**openSUSE:**
+```bash
+sudo zypper addrepo https://download.opensuse.org/repositories/devel:languages:nodejs/openSUSE_Leap_15.4/devel:languages:nodejs.repo
+sudo zypper refresh
+sudo zypper install -y nodejs18
+```
+
+**Arch Linux/Manjaro:**
+```bash
+sudo pacman -S nodejs npm
+```
+
+**方法三：二进制安装**
+```bash
+# 下载并安装Node.js二进制版本
+NODE_VERSION="18.19.0"
+ARCH=$(uname -m)
+if [[ "$ARCH" == "x86_64" ]]; then
+    NODE_ARCH="x64"
+elif [[ "$ARCH" == "aarch64" ]] || [[ "$ARCH" == "arm64" ]]; then
+    NODE_ARCH="arm64"
+else
+    echo "不支持的架构: $ARCH"
+    exit 1
+fi
+
+cd /tmp
+wget -O nodejs.tar.xz "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-$NODE_ARCH.tar.xz"
+sudo tar -xf nodejs.tar.xz -C /usr/local --strip-components=1
+sudo ln -sf /usr/local/bin/node /usr/bin/node
+sudo ln -sf /usr/local/bin/npm /usr/bin/npm
+rm nodejs.tar.xz
 ```
 
 #### 2. "权限被拒绝" 错误

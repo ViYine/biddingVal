@@ -82,14 +82,98 @@ if ! command -v node &> /dev/null; then
     echo "⚠️  未找到 node，尝试自动安装..."
     
     if [[ "$OS" == "linux" ]]; then
-        # Linux系统 - 使用 NodeSource 仓库安装最新版本
-        if command -v curl &> /dev/null; then
-            echo "📦 安装 Node.js 18.x..."
-            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-            sudo apt-get install -y nodejs
+        # 检测Linux发行版
+        if [ -f /etc/os-release ]; then
+            . /etc/os-release
+            OS_NAME=$NAME
+            OS_VERSION=$VERSION_ID
         else
-            echo "❌ 需要 curl 来安装 Node.js，请先安装 curl"
-            exit 1
+            OS_NAME="Unknown"
+            OS_VERSION="Unknown"
+        fi
+        
+        echo "📋 检测到Linux发行版: $OS_NAME $OS_VERSION"
+        
+        if command -v apt-get &> /dev/null; then
+            # Debian/Ubuntu系统
+            echo "📦 使用 apt-get 安装 Node.js..."
+            if command -v curl &> /dev/null; then
+                echo "📦 添加 NodeSource 仓库..."
+                curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+                sudo apt-get install -y nodejs
+            else
+                echo "📦 安装 curl..."
+                sudo apt-get update
+                sudo apt-get install -y curl
+                echo "📦 添加 NodeSource 仓库..."
+                curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+                sudo apt-get install -y nodejs
+            fi
+        elif command -v yum &> /dev/null; then
+            # CentOS/RHEL系统
+            echo "📦 使用 yum 安装 Node.js..."
+            if command -v curl &> /dev/null; then
+                echo "📦 添加 NodeSource 仓库..."
+                curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
+                sudo yum install -y nodejs
+            else
+                echo "📦 安装 curl..."
+                sudo yum install -y curl
+                echo "📦 添加 NodeSource 仓库..."
+                curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
+                sudo yum install -y nodejs
+            fi
+        elif command -v dnf &> /dev/null; then
+            # Fedora系统
+            echo "📦 使用 dnf 安装 Node.js..."
+            if command -v curl &> /dev/null; then
+                echo "📦 添加 NodeSource 仓库..."
+                curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
+                sudo dnf install -y nodejs
+            else
+                echo "📦 安装 curl..."
+                sudo dnf install -y curl
+                echo "📦 添加 NodeSource 仓库..."
+                curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
+                sudo dnf install -y nodejs
+            fi
+        elif command -v zypper &> /dev/null; then
+            # openSUSE系统
+            echo "📦 使用 zypper 安装 Node.js..."
+            sudo zypper addrepo https://download.opensuse.org/repositories/devel:languages:nodejs/openSUSE_Leap_15.4/devel:languages:nodejs.repo
+            sudo zypper refresh
+            sudo zypper install -y nodejs18
+        else
+            echo "❌ 不支持的包管理器，尝试使用 Node.js 二进制安装..."
+            
+            # 下载并安装Node.js二进制版本
+            NODE_VERSION="18.19.0"
+            ARCH=$(uname -m)
+            
+            if [[ "$ARCH" == "x86_64" ]]; then
+                NODE_ARCH="x64"
+            elif [[ "$ARCH" == "aarch64" ]] || [[ "$ARCH" == "arm64" ]]; then
+                NODE_ARCH="arm64"
+            else
+                echo "❌ 不支持的架构: $ARCH"
+                exit 1
+            fi
+            
+            echo "📦 下载 Node.js $NODE_VERSION ($NODE_ARCH)..."
+            cd /tmp
+            wget -O nodejs.tar.xz "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-$NODE_ARCH.tar.xz"
+            
+            if [ $? -eq 0 ]; then
+                echo "📦 解压 Node.js..."
+                sudo tar -xf nodejs.tar.xz -C /usr/local --strip-components=1
+                sudo ln -sf /usr/local/bin/node /usr/bin/node
+                sudo ln -sf /usr/local/bin/npm /usr/bin/npm
+                rm nodejs.tar.xz
+                cd - > /dev/null
+            else
+                echo "❌ Node.js 下载失败"
+                exit 1
+            fi
         fi
     elif [[ "$OS" == "macos" ]]; then
         # macOS系统
@@ -98,14 +182,27 @@ if ! command -v node &> /dev/null; then
             brew install node
         else
             echo "❌ 未找到 Homebrew，请先安装 Homebrew"
+            echo "   安装命令: /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
             exit 1
         fi
     fi
     
     # 再次检查
     if ! command -v node &> /dev/null; then
-        echo "❌ Node.js 安装失败，请手动安装"
-        echo "   访问: https://nodejs.org/ 下载安装"
+        echo "❌ Node.js 自动安装失败"
+        echo ""
+        echo "🔧 请手动安装 Node.js:"
+        echo "1. 访问 https://nodejs.org/ 下载安装包"
+        echo "2. 或使用系统包管理器安装:"
+        if command -v apt-get &> /dev/null; then
+            echo "   sudo apt-get install nodejs npm"
+        elif command -v yum &> /dev/null; then
+            echo "   sudo yum install nodejs npm"
+        elif command -v dnf &> /dev/null; then
+            echo "   sudo dnf install nodejs npm"
+        fi
+        echo ""
+        echo "安装完成后重新运行此脚本"
         exit 1
     else
         echo "✅ Node.js 安装成功"
