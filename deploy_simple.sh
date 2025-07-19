@@ -118,7 +118,11 @@ else
     echo "🔧 尝试修复前端问题..."
     cd ..
     
-    if [ -f "fix_ultimate.sh" ]; then
+    if [ -f "fix_npm_install.sh" ]; then
+        echo "📦 运行npm安装修复脚本..."
+        chmod +x fix_npm_install.sh
+        ./fix_npm_install.sh
+    elif [ -f "fix_ultimate.sh" ]; then
         echo "📦 运行终极解决方案脚本..."
         chmod +x fix_ultimate.sh
         ./fix_ultimate.sh

@@ -260,7 +260,46 @@ cd frontend
 # }
 ```
 
-### 7. Vite迁移问题
+### 7. npm安装问题
+
+**错误信息:**
+```
+npm error code 128
+npm error An unknown git error occurred
+npm error command git --no-replace-objects ls-remote ssh://git@github.com/react-dom/client.git
+npm error git@github.com: Permission denied (publickey).
+```
+
+**解决方案:**
+
+**方法一：使用npm安装修复脚本（推荐）**
+```bash
+chmod +x fix_npm_install.sh
+./fix_npm_install.sh
+```
+
+**方法二：手动修复**
+```bash
+cd frontend
+# 设置npm使用官方registry
+npm config set registry https://registry.npmjs.org/
+npm config set git-protocol https
+# 清理并重新安装
+rm -rf node_modules package-lock.json
+npm install --legacy-peer-deps
+```
+
+**方法三：使用中国镜像**
+```bash
+cd frontend
+# 使用淘宝镜像
+npm config set registry https://registry.npmmirror.com/
+# 或者安装cnpm
+npm install -g cnpm --registry=https://registry.npmmirror.com
+cnpm install
+```
+
+### 8. Vite迁移问题
 
 **错误信息:**
 ```
@@ -356,13 +395,19 @@ grep -n "static" backend_api/bidding_api.py
 
 ## 推荐修复顺序
 
-1. **首先尝试终极解决方案（推荐）:**
+1. **首先尝试npm安装修复（推荐）:**
+   ```bash
+   chmod +x fix_npm_install.sh
+   ./fix_npm_install.sh
+   ```
+
+2. **如果失败，尝试终极解决方案:**
    ```bash
    chmod +x fix_ultimate.sh
    ./fix_ultimate.sh
    ```
 
-2. **如果失败，尝试Babel冲突修复:**
+3. **如果失败，尝试Babel冲突修复:**
    ```bash
    chmod +x fix_babel_conflict.sh
    ./fix_babel_conflict.sh
