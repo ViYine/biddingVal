@@ -90,8 +90,18 @@ if [[ "$OS" == "linux" ]]; then
         # 安装Node.js 18.x
         if ! command -v node &> /dev/null; then
             echo "📦 安装 Node.js 18.x..."
-            curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
-            sudo yum install -y nodejs
+            echo "📦 尝试使用 NodeSource 仓库..."
+            if curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -; then
+                sudo yum install -y nodejs
+            else
+                echo "⚠️  NodeSource 仓库添加失败，尝试系统仓库..."
+                if sudo yum install -y nodejs npm; then
+                    echo "✅ 使用系统仓库安装成功"
+                else
+                    echo "⚠️  系统仓库安装失败，尝试二进制安装..."
+                    install_nodejs_binary
+                fi
+            fi
         else
             echo "✅ Node.js 已安装"
         fi
@@ -166,4 +176,54 @@ echo "1. 运行部署脚本: ./deploy.sh"
 echo "2. 启动系统: ./start.sh"
 echo "3. 访问系统: http://localhost:5001"
 echo ""
-echo "📖 详细说明请查看: INSTALL_GUIDE.md" 
+echo "📖 详细说明请查看: INSTALL_GUIDE.md"
+
+# 二进制安装函数
+install_nodejs_binary() {
+    echo "📦 使用二进制方式安装 Node.js..."
+    
+    NODE_VERSION="18.19.0"
+    ARCH=$(uname -m)
+    
+    case $ARCH in
+        "x86_64") NODE_ARCH="x64" ;;
+        "aarch64"|"arm64") NODE_ARCH="arm64" ;;
+        "i686"|"i386") NODE_ARCH="x86" ;;
+        *) 
+            echo "❌ 不支持的架构: $ARCH"
+            exit 1
+            ;;
+    esac
+    
+    echo "📦 下载 Node.js $NODE_VERSION ($NODE_ARCH)..."
+    
+    # 创建临时目录
+    TEMP_DIR=$(mktemp -d)
+    cd "$TEMP_DIR"
+    
+    # 下载Node.js
+    if command -v wget &> /dev/null; then
+        wget -O nodejs.tar.xz "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-$NODE_ARCH.tar.xz"
+    elif command -v curl &> /dev/null; then
+        curl -L -o nodejs.tar.xz "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-$NODE_ARCH.tar.xz"
+    else
+        echo "❌ 需要 wget 或 curl 来下载文件"
+        exit 1
+    fi
+    
+    if [ $? -eq 0 ]; then
+        echo "📦 解压 Node.js..."
+        sudo tar -xf nodejs.tar.xz -C /usr/local --strip-components=1
+        sudo ln -sf /usr/local/bin/node /usr/bin/node
+        sudo ln -sf /usr/local/bin/npm /usr/bin/npm
+        
+        # 清理
+        cd /
+        rm -rf "$TEMP_DIR"
+        
+        echo "✅ Node.js 二进制安装成功"
+    else
+        echo "❌ Node.js 下载失败"
+        exit 1
+    fi
+} 

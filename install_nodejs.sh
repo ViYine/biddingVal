@@ -54,8 +54,15 @@ if [[ "$OS" == "linux" ]]; then
         "centos"|"rhel"|"rocky"|"almalinux")
             echo "📦 使用 yum 安装 Node.js..."
             sudo yum install -y curl
-            curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
-            sudo yum install -y nodejs
+            echo "📦 添加 NodeSource 仓库..."
+            # 使用更兼容的方式添加仓库
+            curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash - || {
+                echo "⚠️  NodeSource 仓库添加失败，尝试使用系统仓库..."
+                sudo yum install -y nodejs npm || {
+                    echo "⚠️  系统仓库安装失败，尝试二进制安装..."
+                    install_nodejs_binary
+                }
+            }
             ;;
         "fedora")
             echo "📦 使用 dnf 安装 Node.js..."

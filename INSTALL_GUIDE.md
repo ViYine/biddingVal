@@ -112,9 +112,17 @@ brew install python3 node
 #### 1. "未找到 node" 错误
 
 **方法一：使用专用安装脚本**
+
+**通用安装脚本:**
 ```bash
 chmod +x install_nodejs.sh
 ./install_nodejs.sh
+```
+
+**CentOS专用安装脚本:**
+```bash
+chmod +x install_centos.sh
+./install_centos.sh
 ```
 
 **方法二：根据发行版手动安装**
