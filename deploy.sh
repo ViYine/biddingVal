@@ -313,29 +313,34 @@ if ! npm run build:prod; then
                 cd frontend
             else
                 echo "⚠️  npm包修复失败，尝试迁移到Vite..."
-        
-        # 检查是否有Vite迁移脚本
-        if [ -f "../migrate_to_vite.sh" ]; then
-            cd ..
-            chmod +x migrate_to_vite.sh
-            if ./migrate_to_vite.sh; then
-                cd frontend
-            else
-                echo "⚠️  Vite迁移失败，尝试简化迁移..."
-                if [ -f "migrate_to_vite_simple.sh" ]; then
-                    chmod +x migrate_to_vite_simple.sh
-                    if ./migrate_to_vite_simple.sh; then
+                
+                # 检查是否有Vite迁移脚本
+                if [ -f "migrate_to_vite.sh" ]; then
+                    chmod +x migrate_to_vite.sh
+                    if ./migrate_to_vite.sh; then
                         cd frontend
                     else
-                        echo "⚠️  简化Vite迁移也失败，尝试修复Create React App..."
-                        if [ -f "fix_cra.sh" ]; then
-                            chmod +x fix_cra.sh
-                            if ./fix_cra.sh; then
+                        echo "⚠️  Vite迁移失败，尝试简化迁移..."
+                        if [ -f "migrate_to_vite_simple.sh" ]; then
+                            chmod +x migrate_to_vite_simple.sh
+                            if ./migrate_to_vite_simple.sh; then
                                 cd frontend
                             else
-                                echo "❌ 所有修复方法都失败了"
-                                echo "请手动运行: ./fix_cra.sh 或 ./quick_fix.sh"
-                                exit 1
+                                echo "⚠️  简化Vite迁移也失败，尝试修复Create React App..."
+                                if [ -f "fix_cra.sh" ]; then
+                                    chmod +x fix_cra.sh
+                                    if ./fix_cra.sh; then
+                                        cd frontend
+                                    else
+                                        echo "❌ 所有修复方法都失败了"
+                                        echo "请手动运行: ./fix_cra.sh 或 ./quick_fix.sh"
+                                        exit 1
+                                    fi
+                                else
+                                    echo "❌ 无法修复前端构建问题"
+                                    echo "请手动运行: ./fix_frontend.sh 或 ./migrate_to_vite.sh"
+                                    exit 1
+                                fi
                             fi
                         else
                             echo "❌ 无法修复前端构建问题"
