@@ -303,7 +303,16 @@ if ! npm run build:prod; then
     
     # 再次尝试构建
     if ! npm run build:prod; then
-        echo "❌ 前端构建仍然失败，尝试迁移到Vite..."
+        echo "❌ 前端构建仍然失败，尝试修复npm包问题..."
+        
+        # 检查是否有npm包修复脚本
+        if [ -f "../fix_npm_packages.sh" ]; then
+            cd ..
+            chmod +x fix_npm_packages.sh
+            if ./fix_npm_packages.sh; then
+                cd frontend
+            else
+                echo "⚠️  npm包修复失败，尝试迁移到Vite..."
         
         # 检查是否有Vite迁移脚本
         if [ -f "../migrate_to_vite.sh" ]; then

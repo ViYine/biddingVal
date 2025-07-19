@@ -66,7 +66,42 @@ npm install --legacy-peer-deps
 npm run build:prod
 ```
 
-### 3. Vite迁移问题
+### 3. npm包不存在错误
+
+**错误信息:**
+```
+npm error 404 Not Found - GET https://registry.npmjs.org/@types%2fjs-sha256 - Not found
+npm error 404 '@types/js-sha256@^0.9.0' is not in this registry.
+```
+
+**解决方案:**
+
+**方法一：使用npm包修复脚本**
+```bash
+chmod +x fix_npm_packages.sh
+./fix_npm_packages.sh
+```
+
+**方法二：手动修复**
+```bash
+cd frontend
+rm -rf node_modules package-lock.json
+# 编辑package.json，移除@types/js-sha256
+npm install --legacy-peer-deps
+# 创建类型声明文件
+mkdir -p src/types
+cat > src/types/js-sha256.d.ts << 'EOF'
+declare module 'js-sha256' {
+  export function sha256(message: string): string;
+  export function sha224(message: string): string;
+  export function sha256hmac(key: string, message: string): string;
+  export function sha224hmac(key: string, message: string): string;
+}
+EOF
+npm run build:prod
+```
+
+### 4. Vite迁移问题
 
 **错误信息:**
 ```
@@ -162,25 +197,31 @@ grep -n "static" backend_api/bidding_api.py
 
 ## 推荐修复顺序
 
-1. **首先尝试快速修复:**
+1. **首先尝试npm包修复:**
+   ```bash
+   chmod +x fix_npm_packages.sh
+   ./fix_npm_packages.sh
+   ```
+
+2. **如果失败，尝试快速修复:**
    ```bash
    chmod +x quick_fix.sh
    ./quick_fix.sh
    ```
 
-2. **如果失败，修复Create React App:**
+3. **如果还是有问题，修复Create React App:**
    ```bash
    chmod +x fix_cra.sh
    ./fix_cra.sh
    ```
 
-3. **如果还是有问题，尝试Vite迁移:**
+4. **如果还是有问题，尝试Vite迁移:**
    ```bash
    chmod +x migrate_to_vite_simple.sh
    ./migrate_to_vite_simple.sh
    ```
 
-4. **最后，使用详细修复:**
+5. **最后，使用详细修复:**
    ```bash
    chmod +x fix_frontend.sh
    ./fix_frontend.sh
