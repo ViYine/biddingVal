@@ -206,10 +206,37 @@ pip install -r requirements.txt
 ```
 
 #### 5. "前端构建失败"
+
+**错误信息:**
+```
+Error: Cannot find module 'ajv/dist/compile/codegen'
+```
+
+**解决方案:**
+
+**方法一：快速修复**
 ```bash
-# 清理并重新安装
+chmod +x quick_fix.sh
+./quick_fix.sh
+```
+
+**方法二：详细修复**
+```bash
+chmod +x fix_frontend.sh
+./fix_frontend.sh
+```
+
+**方法三：迁移到Vite**
+```bash
+chmod +x migrate_to_vite.sh
+./migrate_to_vite.sh
+```
+
+**方法四：手动修复**
+```bash
 cd frontend
 rm -rf node_modules package-lock.json
+npm cache clean --force
 npm install --legacy-peer-deps
 npm run build:prod
 ```

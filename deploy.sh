@@ -292,7 +292,32 @@ npm install --legacy-peer-deps
 
 # 构建生产版本
 echo "🏗️  构建前端生产版本..."
-npm run build:prod
+if ! npm run build:prod; then
+    echo "⚠️  前端构建失败，尝试修复..."
+    
+    # 尝试修复依赖
+    echo "🔧 尝试修复依赖..."
+    rm -rf node_modules package-lock.json
+    npm cache clean --force
+    npm install --legacy-peer-deps
+    
+    # 再次尝试构建
+    if ! npm run build:prod; then
+        echo "❌ 前端构建仍然失败，尝试迁移到Vite..."
+        
+        # 检查是否有Vite迁移脚本
+        if [ -f "../migrate_to_vite.sh" ]; then
+            cd ..
+            chmod +x migrate_to_vite.sh
+            ./migrate_to_vite.sh
+            cd frontend
+        else
+            echo "❌ 无法修复前端构建问题"
+            echo "请手动运行: ./fix_frontend.sh 或 ./migrate_to_vite.sh"
+            exit 1
+        fi
+    fi
+fi
 
 cd ..
 
